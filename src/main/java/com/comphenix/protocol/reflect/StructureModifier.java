@@ -26,7 +26,6 @@ import java.util.logging.Level;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolLogger;
 import com.comphenix.protocol.error.PluginContext;
-import com.comphenix.protocol.reflect.compiler.BackgroundCompiler;
 import com.comphenix.protocol.reflect.instances.BannedGenerator;
 import com.comphenix.protocol.reflect.instances.DefaultInstances;
 import com.comphenix.protocol.reflect.instances.InstanceProvider;
@@ -505,9 +504,6 @@ public class StructureModifier<TField> {
 
 			subtypeCache.put(fieldType, result);
 				
-			// Automatically compile the structure modifier
-			if (useStructureCompiler && BackgroundCompiler.getInstance() != null)
-				BackgroundCompiler.getInstance().scheduleCompilation(subtypeCache, fieldType);
 		}
 		
 		// Add the target too

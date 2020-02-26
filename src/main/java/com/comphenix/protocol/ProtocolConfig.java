@@ -46,7 +46,6 @@ public class ProtocolConfig {
 	private static final String METRICS_ENABLED = "metrics";
 
 	private static final String IGNORE_VERSION_CHECK = "ignore version check";
-	private static final String BACKGROUND_COMPILER_ENABLED = "background compiler";
 
 	private static final String DEBUG_MODE_ENABLED = "debug";
 	private static final String DETAILED_ERROR = "detailed error";
@@ -377,27 +376,6 @@ public class ProtocolConfig {
 	 */
 	public void setMetricsEnabled(boolean enabled) {
 		setConfig(global, METRICS_ENABLED, enabled);
-		modCount++;
-	}
-
-	/**
-	 * Retrieve whether or not the background compiler for structure modifiers is enabled or not.
-	 * 
-	 * @return TRUE if it is enabled, FALSE otherwise.
-	 */
-	public boolean isBackgroundCompilerEnabled() {
-		return getGlobalValue(BACKGROUND_COMPILER_ENABLED, true);
-	}
-
-	/**
-	 * Set whether or not the background compiler for structure modifiers is enabled or not.
-	 * <p>
-	 * This setting will take effect next time ProtocolLib is started.
-	 * 
-	 * @param enabled - TRUE if is enabled/running, FALSE otherwise.
-	 */
-	public void setBackgroundCompilerEnabled(boolean enabled) {
-		setConfig(global, BACKGROUND_COMPILER_ENABLED, enabled);
 		modCount++;
 	}
 

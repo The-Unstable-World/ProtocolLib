@@ -25,9 +25,6 @@ import java.util.concurrent.ConcurrentMap;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.injector.packet.PacketRegistry;
 import com.comphenix.protocol.reflect.StructureModifier;
-import com.comphenix.protocol.reflect.compiler.BackgroundCompiler;
-import com.comphenix.protocol.reflect.compiler.CompileListener;
-import com.comphenix.protocol.reflect.compiler.CompiledStructureModifier;
 import com.comphenix.protocol.reflect.instances.DefaultInstances;
 import com.comphenix.protocol.utility.MinecraftReflection;
 
@@ -39,8 +36,6 @@ public class StructureCache {
 	// Structure modifiers
 	private static ConcurrentMap<PacketType, StructureModifier<Object>> structureModifiers =
 			new ConcurrentHashMap<PacketType, StructureModifier<Object>>();
-
-	private static Set<PacketType> compiling = new HashSet<PacketType>();
 
 	/**
 	 * Creates an empty Minecraft packet of the given id.
@@ -155,23 +150,6 @@ public class StructureCache {
 			}
 		}
 
-		// Automatically compile the structure modifier
-		if (compile && !(result instanceof CompiledStructureModifier)) {
-			// Compilation is many orders of magnitude slower than synchronization
-			synchronized (compiling) {
-				final BackgroundCompiler compiler = BackgroundCompiler.getInstance();
-
-				if (!compiling.contains(type) && compiler != null) {
-					compiler.scheduleCompilation(result, new CompileListener<Object>() {
-						@Override
-						public void onCompiled(StructureModifier<Object> compiledModifier) {
-							structureModifiers.put(type, compiledModifier);
-						}
-					});
-					compiling.add(type);
-				}
-			}
-		}
 		return result;
 	}
 }

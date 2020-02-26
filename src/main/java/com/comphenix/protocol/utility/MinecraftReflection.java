@@ -53,8 +53,6 @@ import com.comphenix.protocol.error.Report;
 import com.comphenix.protocol.error.ReportType;
 import com.comphenix.protocol.injector.BukkitUnwrapper;
 import com.comphenix.protocol.injector.packet.PacketRegistry;
-import com.comphenix.protocol.reflect.ClassAnalyser;
-import com.comphenix.protocol.reflect.ClassAnalyser.AsmMethod;
 import com.comphenix.protocol.reflect.FuzzyReflection;
 import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.MethodAccessor;
@@ -792,23 +790,8 @@ public class MinecraftReflection {
 		try {
 			return getMinecraftClass("ChatComponentText");
 		} catch (RuntimeException e) {
-			try {
-				Method getScoreboardDisplayName = FuzzyReflection.fromClass(getEntityClass()).
-					getMethodByParameters("getScoreboardDisplayName", getIChatBaseComponentClass(), new Class<?>[0]);
-				Class<?> baseClass = getIChatBaseComponentClass();
-
-				for (AsmMethod method : ClassAnalyser.getDefault().getMethodCalls(getScoreboardDisplayName)) {
-					Class<?> owner = method.getOwnerClass();
-
-					if (isMinecraftClass(owner) && baseClass.isAssignableFrom(owner)) {
-						return setMinecraftClass("ChatComponentText", owner);
-					}
-				}
-			} catch (Exception e1) {
-				throw new IllegalStateException("Cannot find ChatComponentText class.", e);
-			}
+		    throw new IllegalStateException("Cannot find ChatComponentText class.", e);
 		}
-		throw new IllegalStateException("Cannot find ChatComponentText class.");
 	}
 
 	/**
@@ -1713,25 +1696,7 @@ public class MinecraftReflection {
 		try {
 			return getMinecraftClass("NBTCompressedStreamTools");
 		} catch (RuntimeException e) {
-			Class<?> packetSerializer = getPacketDataSerializerClass();
-
-			// Get the write NBT compound method
-			Method writeNbt = FuzzyReflection.fromClass(packetSerializer).
-					getMethodByParameters("writeNbt", getNBTCompoundClass());
-
-			try {
-				// Now -- we inspect all the method calls within that method, and use the first foreign Minecraft class
-				for (AsmMethod method : ClassAnalyser.getDefault().getMethodCalls(writeNbt)) {
-					Class<?> owner = method.getOwnerClass();
-
-					if (!packetSerializer.equals(owner) && isMinecraftClass(owner)) {
-						return setMinecraftClass("NBTCompressedStreamTools", owner);
-					}
-				}
-			} catch (Exception e1) {
-				throw new RuntimeException("Unable to analyse class.", e1);
-			}
-			throw new IllegalArgumentException("Unable to find NBTCompressedStreamTools.");
+			throw new IllegalArgumentException("Unable to find NBTCompressedStreamTools.", e);
 		}
 	}
 

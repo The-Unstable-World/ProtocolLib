@@ -9,9 +9,6 @@ global:
  
   metrics: true
   
-  # Automatically compile structure modifiers 
-  background compiler: true
-  
   # Disable version checking for the given Minecraft version. Backup your world first!
   ignore version check: 
   

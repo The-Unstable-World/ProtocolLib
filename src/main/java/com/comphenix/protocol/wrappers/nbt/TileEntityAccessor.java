@@ -12,10 +12,6 @@ import com.comphenix.protocol.utility.EnhancerFactory;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.google.common.collect.Maps;
 
-import net.sf.cglib.asm.$ClassReader;
-import net.sf.cglib.asm.$ClassVisitor;
-import net.sf.cglib.asm.$MethodVisitor;
-import net.sf.cglib.asm.$Opcodes;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -64,79 +60,18 @@ class TileEntityAccessor<T extends BlockState> {
 
 	void findMethods(Class<?> type, T state) {
 		// Possible read/write methods
-		try {
-			findMethodsUsingASM();
-		} catch (IOException ex1) {
 			try {
 				// Much slower though
 				findMethodUsingCGLib(state);
 			} catch (Exception ex2) {
 				throw new RuntimeException("Cannot find read/write methods in " + type, ex2);
 			}
-		}
 
 		// Ensure we found them
 		if (readCompound == null)
 			throw new RuntimeException("Unable to find read method in " + type);
 		if (writeCompound == null)
 			throw new RuntimeException("Unable to find write method in " + type);
-	}
-
-	/**
-	 * Find the read/write methods in TileEntity.
-	 * @throws IOException If we cannot find these methods.
-	 */
-	private void findMethodsUsingASM() throws IOException {
-		final Class<?> nbtCompoundClass = MinecraftReflection.getNBTCompoundClass();
-		final Class<?> tileEntityClass = MinecraftReflection.getTileEntityClass();
-		final $ClassReader reader = new $ClassReader(tileEntityClass.getCanonicalName());
-
-		final String tagCompoundName = getJarName(MinecraftReflection.getNBTCompoundClass());
-		final String expectedDesc = "(L" + tagCompoundName + ";)";
-
-		reader.accept(new $ClassVisitor($Opcodes.ASM5) {
-			@Override
-			public $MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-				final String methodName = name;
-
-				// Detect read/write calls to NBTTagCompound
-				if (desc.startsWith(expectedDesc)) {
-					return new $MethodVisitor($Opcodes.ASM5) {
-						private int readMethods;
-						private int writeMethods;
-
-						@Override
-						public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean intf) {
-							// This must be a virtual call on NBTTagCompound that accepts a String
-							if (opcode == $Opcodes.INVOKEVIRTUAL
-									&& tagCompoundName.equals(owner)
-									&& desc.startsWith("(Ljava/lang/String")) {
-
-								// Is this a write call?
-								if (desc.endsWith(")V")) {
-									writeMethods++;
-								} else {
-									readMethods++;
-								}
-							}
-						}
-
-						@Override
-						public void visitEnd() {
-							if (readMethods > writeMethods) {
-								readCompound = Accessors.getMethodAccessor(tileEntityClass, methodName, nbtCompoundClass);
-							} else if (writeMethods > readMethods) {
-								writeCompound = Accessors.getMethodAccessor(tileEntityClass, methodName, nbtCompoundClass);
-							}
-
-							super.visitEnd();
-						}
-					};
-				}
-
-				return null;
-			}
-		}, 0);
 	}
 
 	/**

@@ -46,7 +46,6 @@ import com.comphenix.protocol.injector.InternalManager;
 import com.comphenix.protocol.injector.PacketFilterManager;
 import com.comphenix.protocol.injector.PlayerInjectHooks;
 import com.comphenix.protocol.metrics.Statistics;
-import com.comphenix.protocol.reflect.compiler.BackgroundCompiler;
 import com.comphenix.protocol.updater.Updater;
 import com.comphenix.protocol.updater.Updater.UpdateType;
 import com.comphenix.protocol.utility.ChatExtensions;
@@ -115,9 +114,6 @@ public class ProtocolLib extends JavaPlugin {
 	// Executors
 	private static ListeningScheduledExecutorService executorAsync;
 	private static ListeningScheduledExecutorService executorSync;
-
-	// Structure compiler
-	private BackgroundCompiler backgroundCompiler;
 
 	// Used to clean up server packets that have expired, but mostly required to simulate
 	// recieving client packets.
@@ -382,15 +378,7 @@ public class ProtocolLib extends JavaPlugin {
 			// Check for incompatible plugins
 			checkForIncompatibility(manager);
 
-			// Initialize background compiler
-			if (backgroundCompiler == null && config.isBackgroundCompilerEnabled()) {
-				backgroundCompiler = new BackgroundCompiler(getClassLoader(), reporter);
-				BackgroundCompiler.setInstance(backgroundCompiler);
-
-				logger.info("Started structure compiler thread.");
-			} else {
 				logger.info("Structure compiler thread has been disabled.");
-			}
 
 			// Set up command handlers
 			registerCommand(CommandProtocol.NAME, commandProtocol);
@@ -611,13 +599,6 @@ public class ProtocolLib extends JavaPlugin {
 	public void onDisable() {
 		if (skipDisable) {
 			return;
-		}
-
-		// Disable compiler
-		if (backgroundCompiler != null) {
-			backgroundCompiler.shutdownAll();
-			backgroundCompiler = null;
-			BackgroundCompiler.setInstance(null);
 		}
 
 		// Clean up
